@@ -11,6 +11,9 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="min-h-screen flex flex-col">
+<input type="checkbox" id="toggle-pinyin" class="toggle-check">
+<input type="checkbox" id="toggle-hide-meaning" class="toggle-check">
+<script>(function(){try{if(localStorage.getItem('vncc_hide_pinyin')==='1')document.getElementById('toggle-pinyin').checked=true;if(localStorage.getItem('vncc_hide_meaning')==='1')document.getElementById('toggle-hide-meaning').checked=true;}catch(e){}})();</script>
 <!-- STICKY TOP HEADER + 6-STEP BAR -->
 <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
   <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-2">
@@ -22,6 +25,8 @@
       </div>
     </a>
     <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
+      <label for="toggle-pinyin" class="header-toggle-btn px-3 py-1.5 rounded-full border border-slate-300 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center gap-1.5 cursor-pointer select-none shadow-sm"><span class="toggle-badge text-[11px] font-extrabold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 leading-none">拼</span><span>Ẩn/Hiện Pinyin</span></label>
+      <label for="toggle-hide-meaning" class="header-toggle-btn px-3 py-1.5 rounded-full border border-slate-300 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center gap-1.5 cursor-pointer select-none shadow-sm"><span class="toggle-badge text-[11px] leading-none">👁️</span><span>Ẩn/Hiện Nghĩa</span></label>
       <a href="rad214.html" class="header-nav-btn px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-800 hover:bg-emerald-50 text-xs font-bold cursor-pointer select-none">214 Bộ thủ</a>
       <a href="all-steps.html" class="header-nav-btn px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 text-xs font-bold cursor-pointer select-none inline-block">Xem tất cả 6 bước</a>
     </div>
@@ -61,14 +66,14 @@
 <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2.5">
   <div class="text-xs font-extrabold uppercase tracking-wider text-emerald-800">✍️ Bảng tra nhanh 8 Nét Cơ Bản</div>
   <div class="grid grid-cols-4 gap-1.5">
-    <a href="#s2-stroke-1" class="jc"><b class="hanzi-font">一</b><i class="pinyin-text">héng</i><span class="text-[10px] text-slate-500">Ngang</span></a>
-    <a href="#s2-stroke-2" class="jc"><b class="hanzi-font">丨</b><i class="pinyin-text">shù</i><span class="text-[10px] text-slate-500">Sổ</span></a>
-    <a href="#s2-stroke-3" class="jc"><b class="hanzi-font">丿</b><i class="pinyin-text">piě</i><span class="text-[10px] text-slate-500">Phẩy</span></a>
-    <a href="#s2-stroke-4" class="jc"><b class="hanzi-font">丶</b><i class="pinyin-text">diǎn</i><span class="text-[10px] text-slate-500">Chấm</span></a>
-    <a href="#s2-stroke-5" class="jc"><b class="hanzi-font">㇏</b><i class="pinyin-text">nà</i><span class="text-[10px] text-slate-500">Mác</span></a>
-    <a href="#s2-stroke-6" class="jc"><b class="hanzi-font">㇀</b><i class="pinyin-text">tí</i><span class="text-[10px] text-slate-500">Hất</span></a>
-    <a href="#s2-stroke-7" class="jc"><b class="hanzi-font">𠃍</b><i class="pinyin-text">zhé</i><span class="text-[10px] text-slate-500">Gập</span></a>
-    <a href="#s2-stroke-8" class="jc"><b class="hanzi-font">亅</b><i class="pinyin-text">gōu</i><span class="text-[10px] text-slate-500">Móc</span></a>
+    <a href="#s2-stroke-1" class="jc"><b class="hanzi-font">一</b><i class="pinyin-text">héng</i><span class=\"text-[10px] text-slate-500 col-meaning-val\">Ngang</span></a>
+    <a href="#s2-stroke-2" class="jc"><b class="hanzi-font">丨</b><i class="pinyin-text">shù</i><span class=\"text-[10px] text-slate-500 col-meaning-val\">Sổ</span></a>
+    <a href="#s2-stroke-3" class="jc"><b class="hanzi-font">丿</b><i class="pinyin-text">piě</i><span class=\"text-[10px] text-slate-500 col-meaning-val\">Phẩy</span></a>
+    <a href="#s2-stroke-4" class="jc"><b class="hanzi-font">丶</b><i class="pinyin-text">diǎn</i><span class=\"text-[10px] text-slate-500 col-meaning-val\">Chấm</span></a>
+    <a href="#s2-stroke-5" class="jc"><b class="hanzi-font">㇏</b><i class="pinyin-text">nà</i><span class=\"text-[10px] text-slate-500 col-meaning-val\">Mác</span></a>
+    <a href="#s2-stroke-6" class="jc"><b class="hanzi-font">㇀</b><i class="pinyin-text">tí</i><span class=\"text-[10px] text-slate-500 col-meaning-val\">Hất</span></a>
+    <a href="#s2-stroke-7" class="jc"><b class="hanzi-font">𠃍</b><i class="pinyin-text">zhé</i><span class=\"text-[10px] text-slate-500 col-meaning-val\">Gập</span></a>
+    <a href="#s2-stroke-8" class="jc"><b class="hanzi-font">亅</b><i class="pinyin-text">gōu</i><span class=\"text-[10px] text-slate-500 col-meaning-val\">Móc</span></a>
   </div>
 </div>
 
@@ -94,5 +99,53 @@ Viết chữ Hán đúng thứ tự nét (<strong>笔顺 bǐshùn</strong>) giú
     </main>
   </div>
 </div>
+<script>
+(function(){
+  var tp = document.getElementById("toggle-pinyin");
+  var tm = document.getElementById("toggle-hide-meaning");
+  if (tp) {
+    tp.addEventListener("change", function() {
+      try { localStorage.setItem("vncc_hide_pinyin", tp.checked ? "1" : "0"); } catch(e) {}
+      document.querySelectorAll(".pinyin-text.is-revealed").forEach(function(el){ el.classList.remove("is-revealed"); });
+    });
+  }
+  if (tm) {
+    tm.addEventListener("change", function() {
+      try { localStorage.setItem("vncc_hide_meaning", tm.checked ? "1" : "0"); } catch(e) {}
+      document.querySelectorAll(".col-meaning-val.is-revealed").forEach(function(el){ el.classList.remove("is-revealed"); });
+    });
+  }
+  document.addEventListener("click", function(e) {
+    var pinyinHidden = tp && tp.checked;
+    var meaningHidden = tm && tm.checked;
+    if (!pinyinHidden && !meaningHidden) return;
+    var target = e.target.closest(".pinyin-text, .col-meaning-val");
+    if (target) {
+      var isBlurTarget = (pinyinHidden && target.classList.contains("pinyin-text")) || (meaningHidden && target.classList.contains("col-meaning-val"));
+      if (isBlurTarget) {
+        var parentLink = target.closest("a");
+        if (parentLink && !target.classList.contains("is-revealed")) {
+          e.preventDefault();
+        }
+        target.classList.toggle("is-revealed");
+        return;
+      }
+    }
+    if (!e.target.closest("a, button, label, input, summary, details")) {
+      var card = e.target.closest(".v-item, .p-3, .p-2\.5, .p-1\.5, .cc-hd, .cc-wd, .cd-row, tr");
+      if (card) {
+        var items = card.querySelectorAll((pinyinHidden ? ".pinyin-text" : "") + (pinyinHidden && meaningHidden ? ", " : "") + (meaningHidden ? ".col-meaning-val" : ""));
+        if (items.length > 0) {
+          var anyUnrevealed = Array.prototype.some.call(items, function(el){ return !el.classList.contains("is-revealed"); });
+          items.forEach(function(el){
+            if (anyUnrevealed) el.classList.add("is-revealed");
+            else el.classList.remove("is-revealed");
+          });
+        }
+      }
+    }
+  });
+})();
+</script>
 </body>
 </html>
