@@ -106,36 +106,36 @@ function generateWhiteboardData() {
       stepNum = 1;
       parentHub = 'index.html';
       badgeColor = '#10b981';
-    } else if (fpath === 'step2.html') {
-      cluster = 'core_steps';
-      clusterName = 'Bước 2: Bút Thuận';
-      stepNum = 2;
-      parentHub = 'index.html';
-      badgeColor = '#06b6d4';
     } else if (fpath === 'step3.html') {
       cluster = 'core_steps';
-      clusterName = 'Bước 3: 93 Chữ HSK 1';
-      stepNum = 3;
+      clusterName = 'Bước 2: 93 Chữ HSK 1';
+      stepNum = 2;
       parentHub = 'index.html';
       badgeColor = '#3b82f6';
     } else if (fpath === 'step4.html') {
       cluster = 'core_steps';
-      clusterName = 'Bước 4: Look & Learn';
-      stepNum = 4;
+      clusterName = 'Bước 3: Chiết Tự Hán Tự';
+      stepNum = 3;
       parentHub = 'index.html';
       badgeColor = '#8b5cf6';
     } else if (fpath === 'step5.html') {
       cluster = 'core_steps';
-      clusterName = 'Bước 5: Từ Ghép HSK';
-      stepNum = 5;
+      clusterName = 'Bước 4: Từ Ghép HSK';
+      stepNum = 4;
       parentHub = 'index.html';
       badgeColor = '#ec4899';
     } else if (fpath === 'step6.html') {
       cluster = 'core_steps';
-      clusterName = 'Bước 6: 150 Chủ Đề';
-      stepNum = 6;
+      clusterName = 'Bước 5: 150 Chủ Đề';
+      stepNum = 5;
       parentHub = 'index.html';
       badgeColor = '#f59e0b';
+    } else if (fpath === 'step2.html') {
+      cluster = 'other';
+      clusterName = 'Lưu trữ (Đã chuyển hướng)';
+      stepNum = null;
+      parentHub = 'index.html';
+      badgeColor = '#94a3b8';
     } else if (fpath === 'methods.html') {
       cluster = 'methods_hub';
       clusterName = 'Phương Pháp Đa Chiều (Hub)';
@@ -312,8 +312,8 @@ function generateWhiteboardData() {
   const cardH = 130;
   const gapY = 25;
 
-  // Pipeline positions
-  const pipeline = ['index.html', 'step2.html', 'step3.html', 'step4.html', 'step5.html', 'step6.html'];
+  // Pipeline positions (5 core Hanzi steps)
+  const pipeline = ['index.html', 'step3.html', 'step4.html', 'step5.html', 'step6.html'];
   pipeline.forEach((cid, i) => {
     if (nodes[cid]) {
       nodes[cid].x = 80 + i * (cardW + 70);
