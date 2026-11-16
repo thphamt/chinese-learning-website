@@ -112,22 +112,16 @@ function generateWhiteboardData() {
       stepNum = 2;
       parentHub = 'index.html';
       badgeColor = '#3b82f6';
-    } else if (fpath === 'step4.html') {
-      cluster = 'core_steps';
-      clusterName = 'Bước 3: Chiết Tự Hán Tự';
-      stepNum = 3;
+    } else if (fpath === 'step4.html' || fpath === 'step5.html') {
+      cluster = 'other';
+      clusterName = 'Lưu trữ (Đã chuyển hướng)';
+      stepNum = null;
       parentHub = 'index.html';
-      badgeColor = '#8b5cf6';
-    } else if (fpath === 'step5.html') {
-      cluster = 'core_steps';
-      clusterName = 'Bước 4: Từ Ghép HSK';
-      stepNum = 4;
-      parentHub = 'index.html';
-      badgeColor = '#ec4899';
+      badgeColor = '#94a3b8';
     } else if (fpath === 'step6.html') {
       cluster = 'core_steps';
-      clusterName = 'Bước 5: 150 Chủ Đề';
-      stepNum = 5;
+      clusterName = 'Bước 3: 150 Chủ Đề';
+      stepNum = 3;
       parentHub = 'index.html';
       badgeColor = '#f59e0b';
     } else if (fpath === 'step2.html') {
@@ -177,14 +171,14 @@ function generateWhiteboardData() {
     } else if (fpath === 'lessons/step5-all.html') {
       cluster = 'step5_lessons';
       clusterName = 'Bước 5: Từ ghép HSK (Tất cả 51 bài)';
-      stepNum = 5;
+      stepNum = 3;
       parentHub = 'step5.html';
       itemNum = 0;
       badgeColor = '#db2777';
     } else if (fpath.startsWith('lessons/step5-lesson')) {
       cluster = 'step5_lessons';
       clusterName = 'Bước 5: 51 Bài Hán Tự & Từ Ghép';
-      stepNum = 5;
+      stepNum = 3;
       parentHub = 'step5.html';
       const m = fpath.match(/step5-lesson-(\d+)/);
       itemNum = m ? parseInt(m[1], 10) : 0;
@@ -313,7 +307,7 @@ function generateWhiteboardData() {
   const gapY = 25;
 
   // Pipeline positions (5 core Hanzi steps)
-  const pipeline = ['index.html', 'step3.html', 'step4.html', 'step5.html', 'step6.html'];
+  const pipeline = ['index.html', 'step3.html', 'step6.html'];
   pipeline.forEach((cid, i) => {
     if (nodes[cid]) {
       nodes[cid].x = 80 + i * (cardW + 70);
