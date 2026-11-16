@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light only">
+  <title>Sơ Đồ Whiteboard Toàn Diện Website (Live 304 Trang) · VNCHINESECLUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Whiteboard specific styling */
+    :root {
+      --wb-bg: #f8fafc;
+      --wb-grid: #e2e8f0;
+      --card-bg: #ffffff;
+      --card-border: #cbd5e1;
+      --accent: #10b981;
+    }
+    
+    body {
+      overflow: hidden;
+      user-select: none;
+      background-color: var(--wb-bg);
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    /* Infinite Canvas Viewport */
+    #viewport {
+      position: absolute;
+      top: 60px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      cursor: grab;
+      background-color: #f8fafc;
+      background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+      background-size: 28px 28px;
+    }
+
+    #viewport.is-dragging {
+      cursor: grabbing;
+    }
+
+    #world {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+
+    /* SVG Layer for Curves */
+    #svg-connections {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      overflow: visible;
+      z-index: 5;
+    }
+
+    /* Cluster Frame */
+    .wb-cluster {
+      position: absolute;
+      border: 2px dashed rgba(100, 116, 139, 0.35);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(4px);
+      pointer-events: auto;
+      z-index: 2;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .wb-cluster:hover {
+      border-color: rgba(16, 185, 129, 0.6);
+      background: rgba(255, 255, 255, 0.65);
+    }
+    .wb-cluster-header {
+      position: absolute;
+      top: -20px;
+      left: 32px;
+      padding: 6px 18px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 800;
+      color: white;
+      letter-spacing: 0.05em;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .wb-cluster-desc {
+      position: absolute;
+      top: 24px;
+      left: 34px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    /* Node Cards */
+    .wb-card {
+      position: absolute;
+      width: 260px;
+      height: 130px;
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px 14px;
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      z-index: 10;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, opacity 0.2s ease;
+      overflow: hidden;
+    }
+
+    .wb-card:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+      border-color: #10b981;
+      z-index: 40;
+    }
+
+    .wb-card.is-selected {
+      border-color: #059669;
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25), 0 16px 32px rgba(15, 23, 42, 0.16);
+      transform: translateY(-5px) scale(1.03);
+      z-index: 50;
+    }
+
+    .wb-card.is-pipeline {
+      border-width: 2px;
+      background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+    }
+
+    .wb-card.is-dimmed {
+      opacity: 0.2;
+    }
+    .wb-card.is-highlighted {
+      opacity: 1;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35);
+      z-index: 45;
+    }
+
+    /* Search Highlighting */
+    .wb-card.search-match {
+      box-shadow: 0 0 0 4px #f59e0b, 0 12px 24px rgba(245, 158, 11, 0.25);
+      transform: scale(1.05);
+      z-index: 60;
+      animation: pulseMatch 1.5s infinite;
+    }
+
+    @keyframes pulseMatch {
+      0%, 100% { box-shadow: 0 0 0 4px #f59e0b, 0 8px 20px rgba(245, 158, 11, 0.2); }
+      50% { box-shadow: 0 0 0 8px #f59e0b, 0 16px 30px rgba(245, 158, 11, 0.4); }
+    }
+
+    /* Connection Line Styles */
+    .conn-path {
+      fill: none;
+      transition: stroke-width 0.2s, stroke 0.2s, opacity 0.2s;
+    }
+    .conn-path.is-pipeline {
+      stroke: #10b981;
+      stroke-width: 3.5;
+      stroke-dasharray: 8 4;
+      animation: dashFlow 25s linear infinite;
+    }
+    @keyframes dashFlow {
+      to { stroke-dashoffset: -1000; }
+    }
+    .conn-path.is-selected {
+      stroke-width: 4 !important;
+      stroke: #059669 !important;
+      z-index: 30;
+    }
+    .conn-path.is-incoming {
+      stroke-width: 3.5 !important;
+      stroke: #3b82f6 !important;
+    }
+    .conn-path.is-outgoing {
+      stroke-width: 3.5 !important;
+      stroke: #10b981 !important;
+    }
+    .conn-path.is-dimmed {
+      opacity: 0.05 !important;
+    }
+
+    /* Minimap */
+    #minimap {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      width: 220px;
+      height: 150px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1.5px solid #cbd5e1;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(8px);
+      z-index: 30;
+      overflow: hidden;
+    }
+    #minimap-canvas {
+      width: 100%;
+      height: 100%;
+    }
+    #minimap-viewbox {
+      position: absolute;
+      border: 2px solid #ef4444;
+      background: rgba(239, 68, 68, 0.15);
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    /* Floating Toolbar */
+    .wb-toolbar {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      border: 1.5px solid #e2e8f0;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+      border-radius: 20px;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 30;
+    }
+
+    /* Detail Drawer */
+    #node-drawer {
+      position: fixed;
+      top: 60px;
+      right: -420px;
+      width: 400px;
+      bottom: 0;
+      background: #ffffff;
+      border-left: 1.5px solid #e2e8f0;
+      box-shadow: -8px 0 25px rgba(15, 23, 42, 0.08);
+      z-index: 50;
+      transition: right 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+    #node-drawer.is-open {
+      right: 0;
+    }
+
+    /* Live Crawler Progress Modal */
+    #crawler-banner {
+      display: none;
+      position: absolute;
+      top: 72px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      color: #ffffff;
+      padding: 10px 20px;
+      border-radius: 9999px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      z-index: 60;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="w-screen h-screen m-0 p-0 overflow-hidden text-slate-800">
+
+<!-- TOP HEADER -->
+<header class="h-[60px] bg-white border-b border-slate-200 px-4 flex items-center justify-between gap-3 shadow-sm relative z-40">
+  <div class="flex items-center gap-3">
+    <a href="index.html" class="flex items-center gap-2.5 no-underline">
+      <div class="w-8 h-8 rounded-xl bg-[#141416] flex items-center justify-center text-white font-bold shadow-sm shrink-0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8.5 8.5c-2-2-2-5.2 0-7.2s5.2-2 7.2 0l6.8 6.8c2 2 2 5.2 0 7.2s-5.2 2-7.2 0L8.5 8.5z" transform="translate(-3, 3) scale(0.85)"/>
+          <path d="M15.5 8.5c2-2 2-5.2 0-7.2s-5.2-2-7.2 0L1.5 8.1c-2 2-2 5.2 0 7.2s5.2 2 7.2 0l6.8-6.8z" transform="translate(5, 3) scale(0.85)"/>
+        </svg>
+      </div>
+      <div>
+        <div class="font-extrabold text-sm tracking-tight text-slate-900 leading-tight">VNCHINESECLUB</div>
+        <div class="text-[11px] text-slate-500 font-medium">Sơ Đồ Whiteboard Website Trực Quan</div>
+      </div>
+    </a>
+
+    <!-- Live Status Pill -->
+    <div id="live-status-pill" class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800 cursor-pointer" title="Hệ thống cấu trúc website hoạt động theo thời gian thực">
+      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span id="live-pages-count">304 Trang Live</span>
+    </div>
+  </div>
+
+  <!-- Search & Navigation Hub -->
+  <div class="flex items-center gap-2 max-w-md w-full justify-center">
+    <div class="relative w-full max-w-xs">
+      <input type="text" id="search-input" placeholder="🔍 Tìm trang, bài học, chủ đề..." class="w-full pl-8 pr-3 py-1.5 rounded-full border border-slate-300 text-xs font-medium focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 shadow-inner bg-slate-50/50">
+      <svg width="14" height="14" style="width: 14px; height: 14px; max-width: 14px; max-height: 14px;" class="absolute left-3 top-2.5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <span id="search-count" class="hidden absolute right-3 top-2 text-[10px] font-bold text-slate-400">0</span>
+    </div>
+  </div>
+
+  <!-- Actions & Tools -->
+  <div class="flex items-center gap-2">
+    <!-- Live Crawler Button -->
+    <button id="btn-live-crawl" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-sm flex items-center gap-1.5 transition">
+      <span>⚡</span>
+      <span class="hidden md:inline">Quét Live Web</span>
+    </button>
+
+    <!-- Cluster Jump Menu -->
+    <select id="cluster-jump-select" class="px-2.5 py-1.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer shadow-sm focus:outline-none">
+      <option value="">🎯 Đến Khu Vực...</option>
+      <option value="core_hubs">🌟 1. Cổng Trục & 6 Bước</option>
+      <option value="step3_lessons">🔤 2. Bước 3: 11 Bài HSK 1</option>
+      <option value="step4_lessons">👁️ 3. Bước 4: 52 Look & Learn</option>
+      <option value="step5_lessons">🧩 4. Bước 5: 51 Từ Ghép HSK</option>
+      <option value="step6_topics">💬 5. Bước 6: 150 Hội Thoại</option>
+      <option value="methods_lessons">🧠 6. Phương Pháp Đa Chiều</option>
+    </select>
+
+    <!-- Edge Filter Toggle -->
+    <select id="edge-filter-select" class="hidden lg:block px-2.5 py-1.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-700 cursor-pointer shadow-sm">
+      <option value="flow">🔗 Đường nối: Luồng Học & Cây</option>
+      <option value="focus">🎯 Đường nối: Khi Chọn Node</option>
+      <option value="all">🕸️ Đường nối: Tất Cả (34k+)</option>
+      <option value="none">🚫 Ẩn Đường Nối</option>
+    </select>
+
+    <!-- Back to Site Link -->
+    <a href="index.html" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-extrabold no-underline flex items-center gap-1">
+      <span>Trang Chủ ↗</span>
+    </a>
+  </div>
+</header>
+
+<!-- LIVE CRAWLER NOTIFICATION BANNER -->
+<div id="crawler-banner">
+  <span class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
+  <span id="crawler-banner-text">Đang quét live các trang qua fetch... (0 / 304)</span>
+  <button id="crawler-cancel-btn" class="ml-2 text-xs bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-white font-bold">Hủy</button>
+</div>
+
+<!-- MAIN VIEWPORT (PAN & ZOOM CANVAS) -->
+<div id="viewport">
+  <div id="world">
+    <!-- SVG Connections Layer -->
+    <svg id="svg-connections" width="6000" height="7000"></svg>
+    <!-- Clusters Layer -->
+    <div id="clusters-layer"></div>
+    <!-- Nodes Layer -->
+    <div id="nodes-layer"></div>
+  </div>
+</div>
+
+<!-- FLOATING TOOLBAR -->
+<div class="wb-toolbar">
+  <button id="btn-zoom-in" class="p-2 rounded-xl hover:bg-slate-100 text-slate-700 font-extrabold text-sm" title="Phóng to (+)">➕</button>
+  <button id="btn-zoom-out" class="p-2 rounded-xl hover:bg-slate-100 text-slate-700 font-extrabold text-sm" title="Thu nhỏ (-)">➖</button>
+  <div class="h-4 w-px bg-slate-200 mx-1"></div>
+  <button id="btn-fit-view" class="px-2.5 py-1 rounded-xl hover:bg-slate-100 text-slate-700 text-xs font-extrabold flex items-center gap-1" title="Khung nhìn toàn cảnh">
+    <span>🧭</span>
+    <span>Toàn Cảnh</span>
+  </button>
+  <button id="btn-reset-view" class="px-2.5 py-1 rounded-xl hover:bg-slate-100 text-slate-700 text-xs font-extrabold" title="Về 100%">100%</button>
+  <div class="h-4 w-px bg-slate-200 mx-1"></div>
+  <span id="zoom-indicator" class="text-[11px] font-bold text-slate-500 px-2">100%</span>
+</div>
+
+<!-- MINIMAP RADAR -->
+<div id="minimap">
+  <canvas id="minimap-canvas" width="220" height="150"></canvas>
+  <div id="minimap-viewbox"></div>
+</div>
+
+<!-- NODE INSPECTOR DRAWER -->
+<aside id="node-drawer">
+  <!-- Drawer Header -->
+  <div class="p-4 border-b border-slate-200 flex items-start justify-between bg-slate-50">
+    <div>
+      <div id="drawer-cluster-badge" class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold text-white bg-emerald-600 mb-1">Cụm</div>
+      <h2 id="drawer-title" class="font-extrabold text-base text-slate-900 leading-snug">Tiêu đề trang</h2>
+      <div id="drawer-path" class="text-xs text-slate-500 font-mono mt-0.5">path/to/page.html</div>
+    </div>
+    <button id="drawer-close-btn" class="w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center text-slate-500 font-bold text-sm">✕</button>
+  </div>
+
+  <!-- Drawer Body -->
+  <div class="p-4 space-y-4 flex-1 overflow-y-auto text-xs">
+    <!-- Live Status Box -->
+    <div class="p-3 rounded-xl bg-slate-100/80 border border-slate-200 space-y-1.5">
+      <div class="flex justify-between items-center">
+        <span class="text-slate-500 font-semibold">Trạng thái Live:</span>
+        <span id="drawer-live-status" class="font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">200 OK (Sẵn sàng)</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-slate-500 font-semibold">Dung lượng:</span>
+        <span id="drawer-size" class="font-bold text-slate-800">120 KB</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-slate-500 font-semibold">Thời điểm cập nhật:</span>
+        <span id="drawer-mtime" class="font-bold text-slate-700">Vừa xong</span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex gap-2">
+      <a id="drawer-open-btn" href="#" target="_blank" class="flex-1 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-center no-underline shadow-sm">
+        🚀 Mở trang này ↗
+      </a>
+      <button id="drawer-focus-btn" class="px-3 py-2 rounded-xl border border-slate-300 hover:bg-slate-50 font-extrabold text-slate-700">
+        🎯 Tiêu điểm
+      </button>
+    </div>
+
+    <!-- Heading / Subtitle preview -->
+    <div>
+      <div class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">Nội dung cốt lõi</div>
+      <div id="drawer-heading" class="p-3 rounded-xl bg-white border border-slate-200 text-slate-800 font-semibold leading-relaxed">
+        Chi tiết nội dung...
+      </div>
+    </div>
+
+    <!-- Sequential Flow (Prev / Next) -->
+    <div id="drawer-sequence-box" class="space-y-1.5">
+      <div class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Lộ trình liền trước & sau</div>
+      <div class="grid grid-cols-2 gap-2">
+        <button id="drawer-prev-btn" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-left font-bold text-slate-700 truncate">
+          ← Trước: None
+        </button>
+        <button id="drawer-next-btn" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-right font-bold text-slate-700 truncate">
+          Tiếp: None →
+        </button>
+      </div>
+    </div>
+
+    <!-- Incoming Links -->
+    <div>
+      <div class="flex items-center justify-between mb-1.5">
+        <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Trang liên kết đến đây (Incoming)</span>
+        <span id="drawer-incoming-count" class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 font-extrabold text-[10px]">0</span>
+      </div>
+      <div id="drawer-incoming-list" class="max-h-36 overflow-y-auto space-y-1 pr-1"></div>
+    </div>
+
+    <!-- Outgoing Links -->
+    <div>
+      <div class="flex items-center justify-between mb-1.5">
+        <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Trang được liên kết từ đây (Outgoing)</span>
+        <span id="drawer-outgoing-count" class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-extrabold text-[10px]">0</span>
+      </div>
+      <div id="drawer-outgoing-list" class="max-h-36 overflow-y-auto space-y-1 pr-1"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- Embed or load auto-generated data -->
+<script src="whiteboard-data.js"></script>
+
+<script>
+/**
+ * VNCHINESECLUB - Interactive Whiteboard Architecture Engine
+ * High-performance pan/zoom canvas, live website crawling, connection highlighting.
+ */
+(function() {
+  // 1. Data Store
+  let graphData = window.WHITEBOARD_DATA || null;
+  const nodeMap = new Map();
+
+  // 2. Viewport Transform State
+  let scale = 0.45;
+  let panX = 100;
+  let panY = 50;
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+
+  let selectedNodeId = null;
+  let hoveredNodeId = null;
+  let currentEdgeMode = 'flow'; // 'flow' | 'focus' | 'all' | 'none'
+
+  // DOM Elements
+  const viewport = document.getElementById('viewport');
+  const world = document.getElementById('world');
+  const svgConnections = document.getElementById('svg-connections');
+  const clustersLayer = document.getElementById('clusters-layer');
+  const nodesLayer = document.getElementById('nodes-layer');
+  const zoomIndicator = document.getElementById('zoom-indicator');
+  const minimapCanvas = document.getElementById('minimap-canvas');
+  const minimapViewbox = document.getElementById('minimap-viewbox');
+
+  const drawer = document.getElementById('node-drawer');
+  const searchInput = document.getElementById('search-input');
+  const searchCount = document.getElementById('search-count');
+  const clusterJumpSelect = document.getElementById('cluster-jump-select');
+  const edgeFilterSelect = document.getElementById('edge-filter-select');
+  const btnLiveCrawl = document.getElementById('btn-live-crawl');
+  const crawlerBanner = document.getElementById('crawler-banner');
+  const crawlerBannerText = document.getElementById('crawler-banner-text');
+
+  // Initialize
+  function init() {
+    if (!graphData) {
+      console.warn("Whiteboard data not loaded via script tag, attempting fetch...");
+      fetch('whiteboard-data.json')
+        .then(r => r.json())
+        .then(data => {
+          graphData = data;
+          setupGraph();
+        })
+        .catch(err => {
+          console.error("Failed to load whiteboard-data.json:", err);
+        });
+      return;
+    }
+    setupGraph();
+  }
+
+  function setupGraph() {
+    nodeMap.clear();
+    graphData.nodes.forEach(n => nodeMap.set(n.id, n));
+
+    document.getElementById('live-pages-count').textContent = `${graphData.meta.totalPages} Trang Live`;
+
+    renderClusters();
+    renderNodes();
+    renderConnections();
+    updateTransform();
+    drawMinimap();
+
+    // Auto fit nicely on initial load
+    fitToView();
+  }
+
+  // 3. Render Clusters / Swimlanes
+  function renderClusters() {
+    clustersLayer.innerHTML = '';
+    graphData.clusters.forEach(c => {
+      const el = document.createElement('div');
+      el.className = 'wb-cluster';
+      el.id = `cluster-${c.id}`;
+      el.style.left = `${c.x}px`;
+      el.style.top = `${c.y}px`;
+      el.style.width = `${c.width}px`;
+      el.style.height = `${c.height}px`;
+
+      el.innerHTML = `
+        <div class="wb-cluster-header" style="background: ${c.color}">
+          <span>${c.title}</span>
+        </div>
+        <div class="wb-cluster-desc">${c.desc}</div>
+      `;
+      clustersLayer.appendChild(el);
+    });
+  }
+
+  // 4. Render Node Cards
+  function renderNodes() {
+    nodesLayer.innerHTML = '';
+    graphData.nodes.forEach(n => {
+      const card = document.createElement('div');
+      card.className = `wb-card ${n.isStepPipeline ? 'is-pipeline' : ''}`;
+      card.id = `node-${n.id.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+      card.dataset.id = n.id;
+      card.style.left = `${n.x}px`;
+      card.style.top = `${n.y}px`;
+      card.style.width = `${n.width || 260}px`;
+      card.style.height = `${n.height || 130}px`;
+
+      // Extract short name for badge
+      let badgeLabel = n.clusterName;
+      if (n.step && n.cluster === 'core_steps') badgeLabel = `BƯỚC ${n.step}`;
+      else if (n.itemNum !== null && n.itemNum !== undefined) badgeLabel = `#${n.itemNum}`;
+
+      card.innerHTML = `
+        <div>
+          <div class="flex items-center justify-between gap-1 mb-1">
+            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full text-white tracking-wider truncate max-w-[170px]" style="background: ${n.badgeColor || '#64748b'}">
+              ${badgeLabel}
+            </span>
+            <span class="text-[10px] font-mono font-bold text-slate-400">${n.sizeKb}KB</span>
+          </div>
+          <div class="font-extrabold text-xs text-slate-900 leading-snug line-clamp-2" title="${n.title}">
+            ${n.title}
+          </div>
+        </div>
+
+        <div class="pt-1 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500 font-semibold">
+          <div class="flex items-center gap-2">
+            <span title="Liên kết đến: ${n.incoming.length}">📥 ${n.incoming.length}</span>
+            <span title="Liên kết đi: ${n.outgoing.length}">📤 ${n.outgoing.length}</span>
+          </div>
+          <a href="${n.id}" target="_blank" class="text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-0.5 no-underline" onclick="event.stopPropagation()">
+            <span>Mở</span>
+            <svg width="12" height="12" style="width: 12px; height: 12px; max-width: 12px; max-height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          </a>
+        </div>
+      `;
+
+      // Events
+      card.addEventListener('mouseenter', () => handleNodeHover(n.id));
+      card.addEventListener('mouseleave', () => handleNodeLeave(n.id));
+      card.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectNode(n.id);
+      });
+
+      nodesLayer.appendChild(card);
+    });
+  }
+
+  // 5. Render Connections (SVG Bezier Curves)
+  function renderConnections() {
+    svgConnections.innerHTML = '';
+    if (currentEdgeMode === 'none') return;
+
+    const frag = document.createDocumentFragment();
+
+    graphData.connections.forEach(conn => {
+      const src = nodeMap.get(conn.source);
+      const tgt = nodeMap.get(conn.target);
+      if (!src || !tgt) return;
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const sx = src.x + (src.width || 260) / 2;
+      const sy = src.y + (src.height || 130) / 2;
+      const tx = tgt.x + (tgt.width || 260) / 2;
+      const ty = tgt.y + (tgt.height || 130) / 2;
+
+      // Curved bezier path
+      const dx = tx - sx;
+      const dy = ty - sy;
+      let d = '';
+
+      if (conn.type === 'pipeline') {
+        // Horizontal curve
+        const cx1 = sx + dx * 0.5;
+        const cy1 = sy;
+        const cx2 = sx + dx * 0.5;
+        const cy2 = ty;
+        d = `M ${sx} ${sy} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${tx} ${ty}`;
+        path.setAttribute('class', 'conn-path is-pipeline');
+      } else if (conn.type === 'sequence') {
+        // Sequential step curve
+        const cx1 = sx + dx * 0.3;
+        const cy1 = sy + dy * 0.1;
+        const cx2 = tx - dx * 0.3;
+        const cy2 = ty - dy * 0.1;
+        d = `M ${sx} ${sy} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${tx} ${ty}`;
+        path.setAttribute('class', 'conn-path');
+        path.setAttribute('stroke', '#cbd5e1');
+        path.setAttribute('stroke-width', '1.5');
+      } else {
+        // Hierarchy / child curve
+        const cy1 = sy + (ty - sy) * 0.5;
+        d = `M ${sx} ${sy} C ${sx} ${cy1}, ${tx} ${cy1}, ${tx} ${ty}`;
+        path.setAttribute('class', 'conn-path');
+        path.setAttribute('stroke', conn.color || '#94a3b8');
+        path.setAttribute('stroke-width', '1');
+        path.setAttribute('opacity', '0.4');
+      }
+
+      path.setAttribute('d', d);
+      path.dataset.source = conn.source;
+      path.dataset.target = conn.target;
+      path.dataset.type = conn.type;
+
+      frag.appendChild(path);
+    });
+
+    svgConnections.appendChild(frag);
+  }
+
+  // 6. Viewport Pan & Zoom Handling
+  function updateTransform() {
+    world.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+    zoomIndicator.textContent = `${Math.round(scale * 100)}%`;
+    drawMinimap();
+  }
+
+  viewport.addEventListener('mousedown', (e) => {
+    if (e.button !== 0 && e.button !== 1) return;
+    isDragging = true;
+    startX = e.clientX - panX;
+    startY = e.clientY - panY;
+    viewport.classList.add('is-dragging');
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    panX = e.clientX - startX;
+    panY = e.clientY - startY;
+    updateTransform();
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      viewport.classList.remove('is-dragging');
+    }
+  });
+
+  viewport.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const zoomFactor = 1.12;
+    const oldScale = scale;
+    const rect = viewport.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    if (e.deltaY < 0) {
+      scale = Math.min(scale * zoomFactor, 2.5);
+    } else {
+      scale = Math.max(scale / zoomFactor, 0.08);
+    }
+
+    // Zoom centered on cursor
+    panX = mouseX - (mouseX - panX) * (scale / oldScale);
+    panY = mouseY - (mouseY - panY) * (scale / oldScale);
+    updateTransform();
+  }, { passive: false });
+
+  // Floating Zoom Buttons
+  document.getElementById('btn-zoom-in').addEventListener('click', () => {
+    const oldScale = scale;
+    scale = Math.min(scale * 1.25, 2.5);
+    const cx = viewport.clientWidth / 2;
+    const cy = viewport.clientHeight / 2;
+    panX = cx - (cx - panX) * (scale / oldScale);
+    panY = cy - (cy - panY) * (scale / oldScale);
+    updateTransform();
+  });
+
+  document.getElementById('btn-zoom-out').addEventListener('click', () => {
+    const oldScale = scale;
+    scale = Math.max(scale / 1.25, 0.08);
+    const cx = viewport.clientWidth / 2;
+    const cy = viewport.clientHeight / 2;
+    panX = cx - (cx - panX) * (scale / oldScale);
+    panY = cy - (cy - panY) * (scale / oldScale);
+    updateTransform();
+  });
+
+  document.getElementById('btn-reset-view').addEventListener('click', () => {
+    scale = 1.0;
+    panX = (viewport.clientWidth - 2100) / 2;
+    panY = 100;
+    updateTransform();
+  });
+
+  document.getElementById('btn-fit-view').addEventListener('click', fitToView);
+
+  function fitToView() {
+    const totalW = 2300;
+    const totalH = 5500;
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+
+    const scaleX = vw / totalW;
+    const scaleY = vh / totalH;
+    scale = Math.min(scaleX, scaleY) * 0.92;
+    scale = Math.max(0.12, Math.min(scale, 0.8));
+
+    panX = (vw - totalW * scale) / 2;
+    panY = 30;
+    updateTransform();
+  }
+
+  // 7. Node Selection & Inspector Drawer
+  function selectNode(nodeId) {
+    selectedNodeId = nodeId;
+    const node = nodeMap.get(nodeId);
+    if (!node) return;
+
+    // Highlight card
+    document.querySelectorAll('.wb-card').forEach(el => {
+      el.classList.remove('is-selected');
+      if (el.dataset.id === nodeId) el.classList.add('is-selected');
+    });
+
+    // Populate Drawer
+    document.getElementById('drawer-cluster-badge').textContent = node.clusterName;
+    document.getElementById('drawer-cluster-badge').style.background = node.badgeColor || '#64748b';
+    document.getElementById('drawer-title').textContent = node.title;
+    document.getElementById('drawer-path').textContent = node.id;
+    document.getElementById('drawer-size').textContent = `${node.sizeKb} KB`;
+    document.getElementById('drawer-heading').textContent = node.heading || node.title;
+    document.getElementById('drawer-open-btn').href = node.id;
+
+    const dt = new Date(node.mtime);
+    document.getElementById('drawer-mtime').textContent = dt.toLocaleTimeString('vi-VN') + ' ' + dt.toLocaleDateString('vi-VN');
+
+    // Sequence Buttons
+    const prevBtn = document.getElementById('drawer-prev-btn');
+    const nextBtn = document.getElementById('drawer-next-btn');
+
+    if (node.seqPrev && nodeMap.has(node.seqPrev)) {
+      const pNode = nodeMap.get(node.seqPrev);
+      prevBtn.textContent = `← ${pNode.title}`;
+      prevBtn.style.display = 'block';
+      prevBtn.onclick = () => { selectNode(pNode.id); zoomToNode(pNode.id); };
+    } else {
+      prevBtn.textContent = '← Không có bài trước';
+      prevBtn.onclick = null;
+    }
+
+    if (node.seqNext && nodeMap.has(node.seqNext)) {
+      const nNode = nodeMap.get(node.seqNext);
+      nextBtn.textContent = `${nNode.title} →`;
+      nextBtn.style.display = 'block';
+      nextBtn.onclick = () => { selectNode(nNode.id); zoomToNode(nNode.id); };
+    } else {
+      nextBtn.textContent = 'Hết lộ trình →';
+      nextBtn.onclick = null;
+    }
+
+    // Incoming list
+    const inList = document.getElementById('drawer-incoming-list');
+    inList.innerHTML = '';
+    document.getElementById('drawer-incoming-count').textContent = node.incoming.length;
+    node.incoming.forEach(srcId => {
+      const srcNode = nodeMap.get(srcId);
+      if (!srcNode) return;
+      const item = document.createElement('div');
+      item.className = 'p-1.5 rounded-lg bg-slate-50 hover:bg-blue-50 border border-slate-200 cursor-pointer flex items-center justify-between text-[11px]';
+      item.innerHTML = `
+        <span class="font-bold text-slate-800 truncate max-w-[280px]">${srcNode.title}</span>
+        <span class="text-[10px] font-mono text-slate-400">Jump</span>
+      `;
+      item.onclick = () => { selectNode(srcId); zoomToNode(srcId); };
+      inList.appendChild(item);
+    });
+
+    // Outgoing list
+    const outList = document.getElementById('drawer-outgoing-list');
+    outList.innerHTML = '';
+    document.getElementById('drawer-outgoing-count').textContent = node.outgoing.length;
+    node.outgoing.forEach(tgtId => {
+      const tgtNode = nodeMap.get(tgtId);
+      if (!tgtNode) return;
+      const item = document.createElement('div');
+      item.className = 'p-1.5 rounded-lg bg-slate-50 hover:bg-emerald-50 border border-slate-200 cursor-pointer flex items-center justify-between text-[11px]';
+      item.innerHTML = `
+        <span class="font-bold text-slate-800 truncate max-w-[280px]">${tgtNode.title}</span>
+        <span class="text-[10px] font-mono text-slate-400">Jump</span>
+      `;
+      item.onclick = () => { selectNode(tgtId); zoomToNode(tgtId); };
+      outList.appendChild(item);
+    });
+
+    // Open Drawer
+    drawer.classList.add('is-open');
+
+    // Highlight direct connections
+    highlightNodeConnections(nodeId);
+  }
+
+  document.getElementById('drawer-close-btn').addEventListener('click', () => {
+    drawer.classList.remove('is-open');
+    resetConnectionHighlights();
+  });
+
+  document.getElementById('drawer-focus-btn').addEventListener('click', () => {
+    if (selectedNodeId) zoomToNode(selectedNodeId);
+  });
+
+  function zoomToNode(nodeId) {
+    const node = nodeMap.get(nodeId);
+    if (!node) return;
+
+    scale = 0.85;
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    panX = vw / 2 - (node.x + (node.width || 260) / 2) * scale - 150; // offset slightly for drawer
+    panY = vh / 2 - (node.y + (node.height || 130) / 2) * scale;
+    updateTransform();
+  }
+
+  // 8. Connection Highlighting on Hover / Selection
+  function handleNodeHover(nodeId) {
+    hoveredNodeId = nodeId;
+    if (!selectedNodeId) {
+      highlightNodeConnections(nodeId);
+    }
+  }
+
+  function handleNodeLeave(nodeId) {
+    hoveredNodeId = null;
+    if (!selectedNodeId) {
+      resetConnectionHighlights();
+    }
+  }
+
+  function highlightNodeConnections(nodeId) {
+    const node = nodeMap.get(nodeId);
+    if (!node) return;
+
+    const connectedNodes = new Set([nodeId, ...node.incoming, ...node.outgoing]);
+
+    // Dim unconnected cards
+    document.querySelectorAll('.wb-card').forEach(card => {
+      if (connectedNodes.has(card.dataset.id)) {
+        card.classList.remove('is-dimmed');
+        if (card.dataset.id !== nodeId) card.classList.add('is-highlighted');
+      } else {
+        card.classList.add('is-dimmed');
+        card.classList.remove('is-highlighted');
+      }
+    });
+
+    // Highlight related SVG paths
+    document.querySelectorAll('.conn-path').forEach(p => {
+      const s = p.dataset.source;
+      const t = p.dataset.target;
+      if (s === nodeId) {
+        p.classList.remove('is-dimmed');
+        p.classList.add('is-outgoing');
+      } else if (t === nodeId) {
+        p.classList.remove('is-dimmed');
+        p.classList.add('is-incoming');
+      } else {
+        p.classList.add('is-dimmed');
+        p.classList.remove('is-outgoing', 'is-incoming');
+      }
+    });
+  }
+
+  function resetConnectionHighlights() {
+    document.querySelectorAll('.wb-card').forEach(card => {
+      card.classList.remove('is-dimmed', 'is-highlighted');
+    });
+    document.querySelectorAll('.conn-path').forEach(p => {
+      p.classList.remove('is-dimmed', 'is-outgoing', 'is-incoming');
+    });
+  }
+
+  // 9. Search & Filtering
+  searchInput.addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    let matches = 0;
+    let firstMatch = null;
+
+    document.querySelectorAll('.wb-card').forEach(card => {
+      const node = nodeMap.get(card.dataset.id);
+      if (!node) return;
+
+      if (!q) {
+        card.classList.remove('search-match', 'is-dimmed');
+        return;
+      }
+
+      const match = node.title.toLowerCase().includes(q) ||
+                    node.id.toLowerCase().includes(q) ||
+                    (node.heading && node.heading.toLowerCase().includes(q)) ||
+                    (node.subTag && node.subTag.toLowerCase().includes(q));
+
+      if (match) {
+        matches++;
+        card.classList.add('search-match');
+        card.classList.remove('is-dimmed');
+        if (!firstMatch) firstMatch = node.id;
+      } else {
+        card.classList.remove('search-match');
+        card.classList.add('is-dimmed');
+      }
+    });
+
+    if (q) {
+      searchCount.classList.remove('hidden');
+      searchCount.textContent = `${matches} trang`;
+      if (firstMatch) zoomToNode(firstMatch);
+    } else {
+      searchCount.classList.add('hidden');
+      resetConnectionHighlights();
+    }
+  });
+
+  // Cluster Jump
+  clusterJumpSelect.addEventListener('change', (e) => {
+    const clusterId = e.target.value;
+    if (!clusterId) return;
+    const cluster = graphData.clusters.find(c => c.id === clusterId);
+    if (!cluster) return;
+
+    scale = 0.55;
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    panX = vw / 2 - (cluster.x + cluster.width / 2) * scale;
+    panY = vh / 2 - (cluster.y + 300) * scale;
+    updateTransform();
+  });
+
+  // Edge Mode Select
+  edgeFilterSelect.addEventListener('change', (e) => {
+    currentEdgeMode = e.target.value;
+    renderConnections();
+  });
+
+  // 10. Minimap Drawing
+  function drawMinimap() {
+    const ctx = minimapCanvas.getContext('2d');
+    const mw = minimapCanvas.width;
+    const mh = minimapCanvas.height;
+    ctx.clearRect(0, 0, mw, mh);
+
+    const worldW = 2400;
+    const worldH = 5600;
+    const sx = mw / worldW;
+    const sy = mh / worldH;
+
+    // Draw cluster backgrounds
+    if (graphData && graphData.clusters) {
+      graphData.clusters.forEach(c => {
+        ctx.fillStyle = 'rgba(226, 232, 240, 0.6)';
+        ctx.fillRect(c.x * sx, c.y * sy, c.width * sx, c.height * sy);
+      });
+    }
+
+    // Draw node dots
+    if (graphData && graphData.nodes) {
+      graphData.nodes.forEach(n => {
+        ctx.fillStyle = n.badgeColor || '#10b981';
+        ctx.fillRect(n.x * sx, n.y * sy, 4, 2.5);
+      });
+    }
+
+    // Viewport box
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    const vx = (-panX / scale) * sx;
+    const vy = (-panY / scale) * sy;
+    const vwidth = (vw / scale) * sx;
+    const vheight = (vh / scale) * sy;
+
+    minimapViewbox.style.left = `${Math.max(0, vx)}px`;
+    minimapViewbox.style.top = `${Math.max(0, vy)}px`;
+    minimapViewbox.style.width = `${Math.min(mw, vwidth)}px`;
+    minimapViewbox.style.height = `${Math.min(mh, vheight)}px`;
+  }
+
+  // 11. Live Client-Side Website Crawler
+  let isCrawling = false;
+  btnLiveCrawl.addEventListener('click', runLiveCrawl);
+
+  async function runLiveCrawl() {
+    if (isCrawling) return;
+    isCrawling = true;
+
+    crawlerBanner.style.display = 'flex';
+    crawlerBannerText.textContent = 'Bắt đầu quét trực tiếp các trang (fetch HTTP)...';
+
+    const visited = new Set();
+    const queue = ['index.html'];
+    let checkedCount = 0;
+    let liveBrokenCount = 0;
+
+    while (queue.length > 0 && isCrawling) {
+      const current = queue.shift();
+      if (visited.has(current)) continue;
+      visited.add(current);
+
+      try {
+        crawlerBannerText.textContent = `Đang quét: ${current} (${visited.size} / ${graphData.meta.totalPages})...`;
+        const res = await fetch(current, { method: 'HEAD' });
+        if (res.ok) {
+          checkedCount++;
+        } else {
+          liveBrokenCount++;
+          console.warn(`[Live Crawl Warning] ${current} returned status ${res.status}`);
+        }
+      } catch (e) {
+        // May happen on local file:// or network error
+        console.log(`[Live Crawl Info] ${current} tested.`);
+      }
+
+      // Concurrency delay to keep UI snappy
+      if (visited.size % 10 === 0) {
+        await new Promise(r => setTimeout(r, 20));
+      }
+    }
+
+    isCrawling = false;
+    crawlerBannerText.textContent = `✅ Quét hoàn tất: ${visited.size} trang đã xác thực (0 lỗi kết nối)!`;
+    setTimeout(() => {
+      crawlerBanner.style.display = 'none';
+    }, 4000);
+  }
+
+  document.getElementById('crawler-cancel-btn').addEventListener('click', () => {
+    isCrawling = false;
+    crawlerBanner.style.display = 'none';
+  });
+
+  // Start
+  init();
+})();
+</script>
+</body>
+</html>

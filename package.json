@@ -1,0 +1,19 @@
+{
+  "name": "chinese-learning-website",
+  "version": "1.0.0",
+  "description": "VNCHINESECLUB - Lộ trình 6 Bước Hán tự & Hội thoại",
+  "scripts": {
+    "build": "node scripts/generate-whiteboard.js",
+    "whiteboard": "node scripts/generate-whiteboard.js",
+    "whiteboard:watch": "node scripts/watch-whiteboard.js"
+  },
+  "keywords": [
+    "chinese",
+    "hanzi",
+    "learning",
+    "whiteboard",
+    "sitemap"
+  ],
+  "author": "",
+  "license": "ISC"
+}
