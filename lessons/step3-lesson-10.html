@@ -9,45 +9,35 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../learner-ui.css">
+  <script src="../learner-ui.js" defer></script>
 </head>
 <body class="min-h-screen flex flex-col">
-<input type="checkbox" id="toggle-pinyin" class="toggle-check">
-<input type="checkbox" id="toggle-hide-meaning" class="toggle-check">
+<a class="skip-link" href="#lesson-content">Đến nội dung bài học</a>
+<input type="checkbox" id="toggle-pinyin" class="toggle-check" aria-hidden="true" tabindex="-1">
+<input type="checkbox" id="toggle-hide-meaning" class="toggle-check" aria-hidden="true" tabindex="-1">
 <script>(function(){try{if(localStorage.getItem('vncc_hide_pinyin')==='1')document.getElementById('toggle-pinyin').checked=true;if(localStorage.getItem('vncc_hide_meaning')==='1')document.getElementById('toggle-hide-meaning').checked=true;}catch(e){}})();</script>
 <!-- STICKY TOP HEADER + 6-STEP BAR -->
-<header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
-  <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-2">
-    <a href="../index.html" class="flex items-center gap-2.5 cursor-pointer no-underline shrink-0">
-      <div class="w-9 h-9 rounded-xl bg-[#141416] flex items-center justify-center text-white font-bold shadow-sm shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 8.5c-2-2-2-5.2 0-7.2s5.2-2 7.2 0l6.8 6.8c2 2 2 5.2 0 7.2s-5.2 2-7.2 0L8.5 8.5z" transform="translate(-3, 3) scale(0.85)"/><path d="M15.5 8.5c2-2 2-5.2 0-7.2s-5.2-2-7.2 0L1.5 8.1c-2 2-2 5.2 0 7.2s5.2 2 7.2 0l6.8-6.8z" transform="translate(5, 3) scale(0.85)"/></svg></div>
-      <div>
-        <div class="font-extrabold text-sm tracking-tight text-slate-900 leading-none">VNCHINESECLUB</div>
-        <div class="text-[11px] text-slate-500 mt-0.5">Lộ trình 6 Bước Hán tự &amp; Hội thoại</div>
-      </div>
-    </a>
-    <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
-      <label for="toggle-pinyin" class="header-toggle-btn px-3 py-1.5 rounded-full border border-slate-300 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center gap-1.5 cursor-pointer select-none shadow-sm"><span class="toggle-badge text-[11px] font-extrabold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 leading-none">拼</span><span>Ẩn/Hiện Pinyin</span></label>
-      <label for="toggle-hide-meaning" class="header-toggle-btn px-3 py-1.5 rounded-full border border-slate-300 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center gap-1.5 cursor-pointer select-none shadow-sm"><span class="toggle-badge text-[11px] leading-none">👁️</span><span>Ẩn/Hiện Nghĩa</span></label>
-      <a href="../rad214.html" class="header-nav-btn px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-800 hover:bg-emerald-50 text-xs font-bold cursor-pointer select-none">214 Bộ thủ</a>
-      <a href="../all-steps.html" class="header-nav-btn px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 text-xs font-bold cursor-pointer select-none inline-block">Xem tất cả 6 bước</a>
-      <a href="../whiteboard.html" class="header-nav-btn px-3 py-1.5 rounded-lg border border-emerald-700 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-xs font-bold cursor-pointer select-none inline-flex items-center gap-1">🗺️ Sơ đồ Website</a>
+<header class="site-header">
+  <div class="site-topbar">
+    <a href="../index.html" class="site-brand"><span class="brand-mark" aria-hidden="true">字</span><span>VNCHINESECLUB</span></a>
+    <div class="site-actions">
+      <a href="../resources.html" class="resources-link">Tra cứu</a>
+      <details class="study-settings"><summary>Hiển thị <span aria-hidden="true">⌄</span></summary>
+        <div class="settings-panel"><span class="settings-title">Tự kiểm tra</span>
+          <label><input type="checkbox" data-setting="pinyin"> Ẩn Pinyin</label>
+          <label><input type="checkbox" data-setting="meaning"> Ẩn nghĩa</label>
+          <p>Bấm vào phần đã ẩn để xem đáp án.</p>
+        </div>
+      </details>
     </div>
   </div>
-  <div class="border-t border-slate-100 bg-slate-50/70">
-    <div class="max-w-7xl mx-auto px-4 py-2">
-                  <nav aria-label="Lộ trình 3 bước Hán tự" class="grid grid-cols-2 md:grid-cols-4 gap-2">
-        <a href="../index.html" class="step-nav-card"><div class="step-sub text-[11px] text-slate-500 font-bold uppercase tracking-wider">Bước 1</div><div class="step-title font-extrabold text-xs sm:text-sm mt-0.5 leading-snug text-slate-900">60 bộ thủ</div></a>
-        <a href="../step3.html" class="step-nav-card is-active"><div class="step-sub text-[11px] text-slate-500 font-bold uppercase tracking-wider">Bước 2</div><div class="step-title font-extrabold text-xs sm:text-sm mt-0.5 leading-snug text-slate-900">93 chữ HSK 1</div></a>
-        <a href="../step6.html" class="step-nav-card"><div class="step-sub text-[11px] text-slate-500 font-bold uppercase tracking-wider">Bước 3</div><div class="step-title font-extrabold text-xs sm:text-sm mt-0.5 leading-snug text-slate-900">150 Chủ đề</div></a>
-        <a href="../methods.html" class="step-nav-card"><div class="step-sub text-[11px] text-slate-500 font-bold uppercase tracking-wider">Cách học khác</div><div class="step-title font-extrabold text-xs sm:text-sm mt-0.5 leading-snug text-slate-900">Học chữ đa chiều</div></a>
-      </nav>
-    </div>
-  </div>
-  <div class="bg-slate-100/95 border-t border-slate-200 text-xs text-slate-600"><div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between gap-2 flex-wrap"><div class="flex items-center gap-1.5 font-medium"><a href="../index.html" class="text-emerald-800 font-bold hover:underline no-underline">Trang chủ</a><span>›</span><span class="text-slate-800 font-bold">Bước 3: Hán tự nhập môn › Bài 10</span></div><span class="text-[11px] text-slate-500">📌 Cột trái: Điều hướng &amp; Bảng tra chữ · Cột phải: Nội dung giải thích chi tiết</span></div></div>
+  <nav class="learning-path" aria-label="Các bộ bài học"><a href="../index.html" class="learning-step"><span>60 bộ thủ</span></a><a href="../step3.html" class="learning-step is-current" aria-current="page"><span>93 chữ HSK 1</span></a><a href="../lessons/step4-all.html" class="learning-step"><span>Look & Learn</span></a><a href="../lessons/step5-all.html" class="learning-step"><span>Chữ & từ ghép</span></a><a href="../step6.html" class="learning-step"><span>150 chủ đề</span></a><a href="../methods.html" class="learning-step"><span>Cách ghi nhớ</span></a></nav>
 </header>
 <!-- TWO-COLUMN WORKSPACE: SIDEBAR (NAVIGATION & CHARACTER TABLES) + MAIN BAR (EXPLANATIONS) -->
 <div class="max-w-7xl w-full mx-auto px-4 py-5 flex-1">
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-    <aside class="lg:col-span-4 xl:col-span-4 lg:sticky lg:top-36 lg:max-h-[calc(100vh-9.5rem)] lg:overflow-y-auto space-y-4 sidebar-pane" aria-label="Điều hướng và Bảng tra chữ">
+    <aside class="lg:col-span-4 xl:col-span-4 lg:sticky lg:top-36 lg:max-h-[calc(100vh-9.5rem)] lg:overflow-y-auto space-y-4 sidebar-pane" aria-label="Điều hướng và Bảng tra chữ"><button class="index-toggle" type="button" aria-expanded="false" aria-controls="lesson-index">Mục lục bài học <span aria-hidden="true">＋</span></button><div id="lesson-index" class="lesson-index-content">
       
         <div class="p-4 rounded-2xl bg-white border border-emerald-200 shadow-sm space-y-2.5">
           <div class="flex items-center justify-between gap-2">
@@ -73,8 +63,8 @@
       </div>
     </section>
     
-    </aside>
-    <main class="lg:col-span-8 xl:col-span-8 min-w-0 space-y-8 main-pane">
+    </div></aside>
+    <main id="lesson-content" tabindex="-1" class="lg:col-span-8 xl:col-span-8 min-w-0 space-y-8 main-pane">
       <article id="page-step3" class="static-page-section"><div class="s3-panels-wrap"><div id="s3-lesson-10" class="s3-lesson-panel mt-6 pt-4 border-t border-slate-200"><div class="flex flex-wrap items-center justify-between gap-2 mb-4"><div><span class="text-xs font-bold text-emerald-700 uppercase">Bài 10</span><h3 class="text-xl font-extrabold text-slate-900">Hoạt động hằng ngày (jiàn ~ lì) (见 闻 话 食 饮 买 休 立)</h3><p class="text-xs text-slate-600">Nhìn, nghe, nói chuyện, ăn, uống, mua sắm, nghỉ ngơi và đứng.</p></div><a href="#s3-grid93" class="px-3 py-1 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 no-underline">↑ Bảng 93 chữ</a></div><div class="space-y-3.5"><div id="s3-char-73" class="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm"><div class="flex flex-col sm:flex-row gap-4 items-start"><div class="tianzige-box w-20 h-20 flex items-center justify-center shrink-0"><div class="flex items-center justify-center" style="width:66px;height:66px;"><span class="hanzi-font font-semibold leading-none" style="font-size:42px;color:#0f172a;">见</span></div></div><div class="flex-1 min-w-0 w-full"><div class="flex flex-wrap items-center justify-between gap-2"><div class="flex items-baseline gap-2.5 flex-wrap"><span class="hanzi-font text-2xl font-bold" style="color:#dc2626;">见</span><span class="pinyin-text text-lg font-extrabold text-emerald-800">jiàn</span><span class="text-sm font-bold text-slate-800 col-meaning-val">· nhìn thấy, gặp mặt</span><span class="text-xs px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">Giản: 见</span></div><span class="text-xs text-slate-500">Bộ thủ: <strong>見 jiàn</strong> · 7 nét</span></div><div class="mt-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950">💡 Con mắt (目 mù) gắn trên đôi chân người (儿 ér).</div><div class="mt-2.5 grid grid-cols-1 sm:grid-cols-3 gap-2"><div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200"><div class="hanzi-font font-bold text-sm text-slate-900">看见</div><div class="pinyin-text text-xs text-emerald-700 font-semibold">kànjiàn</div><div class=\"text-xs text-slate-600 col-meaning-val\">nhìn thấy</div></div><div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200"><div class="hanzi-font font-bold text-sm text-slate-900">再见</div><div class="pinyin-text text-xs text-emerald-700 font-semibold">zàijiàn</div><div class=\"text-xs text-slate-600 col-meaning-val\">tạm biệt</div></div><div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200"><div class="hanzi-font font-bold text-sm text-slate-900">见面</div><div class="pinyin-text text-xs text-emerald-700 font-semibold">jiànmiàn</div><div class=\"text-xs text-slate-600 col-meaning-val\">gặp mặt</div></div></div><div class="mt-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700">
 📖 <strong>Câu đọc thử:</strong> 明天见面聊吧，再见！ (<span class=\"pinyin-text\">Míngtiān jiànmiàn liáo ba, zàijiàn</span> - <span class=\"col-meaning-val\">Mai gặp nói chuyện nhé, tạm biệt!</span>)
 </div></div></div></div><div id="s3-char-74" class="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm"><div class="flex flex-col sm:flex-row gap-4 items-start"><div class="tianzige-box w-20 h-20 flex items-center justify-center shrink-0"><div class="flex items-center justify-center" style="width:66px;height:66px;"><span class="hanzi-font font-semibold leading-none" style="font-size:42px;color:#0f172a;">闻</span></div></div><div class="flex-1 min-w-0 w-full"><div class="flex flex-wrap items-center justify-between gap-2"><div class="flex items-baseline gap-2.5 flex-wrap"><span class="hanzi-font text-2xl font-bold" style="color:#dc2626;">闻</span><span class="pinyin-text text-lg font-extrabold text-emerald-800">wén</span><span class="text-sm font-bold text-slate-800 col-meaning-val">· nghe thấy, ngửi, tin tức</span><span class="text-xs px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">Giản: 闻</span></div><span class="text-xs text-slate-500">Bộ thủ: <strong>耳 ěr</strong> · 14 nét</span></div><div class="mt-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950">💡 Ghé cái tai (耳 ěr) vào khe cửa (門 mén) để lắng nghe.</div><div class="mt-2.5 grid grid-cols-1 sm:grid-cols-3 gap-2"><div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200"><div class="hanzi-font font-bold text-sm text-slate-900">新闻</div><div class="pinyin-text text-xs text-emerald-700 font-semibold">xīnwén</div><div class=\"text-xs text-slate-600 col-meaning-val\">tin tức</div></div><div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200"><div class="hanzi-font font-bold text-sm text-slate-900">闻名</div><div class="pinyin-text text-xs text-emerald-700 font-semibold">wénmíng</div><div class=\"text-xs text-slate-600 col-meaning-val\">nổi tiếng</div></div><div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200"><div class="hanzi-font font-bold text-sm text-slate-900">见闻</div><div class="pinyin-text text-xs text-emerald-700 font-semibold">jiànwén</div><div class=\"text-xs text-slate-600 col-meaning-val\">hiểu biết</div></div></div><div class="mt-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700">

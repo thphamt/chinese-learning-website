@@ -1,2 +1,5 @@
 .DS_Store
 .vercel
+.playwright-cli/
+output/playwright/
+__pycache__/
